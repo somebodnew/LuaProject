@@ -1,0 +1,63 @@
+local x = 0
+local y = 0
+local defSpeed = 10
+local speed = defSpeed
+local maxSpeed = 20
+local running = false
+
+function love.update(dt)
+	if running == true then
+		
+		if not(speed == maxSpeed) then
+			speed = speed + 2
+		end
+	else
+		
+		speed = defSpeed
+	end
+	
+end
+
+
+
+function love.draw()
+	--love.graphics.rectangle("fill", x, 20, 100, 100,0,0,0,"")
+
+	love.graphics.circle("fill", x, y, 30, 6)
+
+	--love.graphics.print("line",50,200,0)
+	--love.graphics.arc("line", 100, 100, 30, 3.14, 3.14/2,3) 
+
+	if love.keyboard.isDown('w') then
+		y = y - speed
+		running = true
+	end		
+	if love.keyboard.isDown('s') then
+		y = y + speed
+		running = true
+	end
+	if love.keyboard.isDown('a') then
+		x = x - speed
+		running = true
+	end
+	if love.keyboard.isDown('d') then
+		x = x + speed
+		running = true
+	else
+		running = false
+	end
+	
+end
+
+
+
+
+
+
+
+
+
+
+
+--cd "C:/Program Files/LOVE"
+--love.exe D:/Game
