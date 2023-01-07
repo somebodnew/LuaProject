@@ -6,7 +6,10 @@ function GenCells(HorCell,VerCell,tileSize)
 			cell = {
 			x = i*tileSize+tileSize/2,
 			y = j*tileSize+tileSize/2, 
-			color = {c,c,c}}
+			defaultColor = {c,c,c},
+			color = {c,c,c},
+			timer = 0,
+			Growing = false}
 			
 			table.insert(cells, cell)
 			
@@ -14,7 +17,7 @@ function GenCells(HorCell,VerCell,tileSize)
 	end
 	return cells
 end
-
+--grade = 0
 function DrawCells(tileSize,cells)
 
 	for l,a in ipairs(cells) do 
@@ -25,7 +28,43 @@ function DrawCells(tileSize,cells)
 	
 end
 
+function PlantCell(cells,self)
+
+	for l,a in ipairs(cells) do 
+		
+		if a.x == self.x and a.y == self.y then 
+			a.color = {171/255,82/255,54/255} 
+			a.Growing = true
+			a.timer = 15
+		end
+
+	end
+end
+
+function GrowVeg(self)
+	--table.insert(self,)
+end
+
+function CellUpdate(cells,self)
+	
+	for l,a in ipairs(cells) do 
+		
+		if a.Growing == true  then 
+			a.timer = a.timer - 1 
+			
+			if a.timer == 0 then
+				a.Growing = false
+				a.color = a.defaultColor
+				GrowVeg(self)
+			end
+		end
+		
+	end
+
+end
 return {
 	GenCells = GenCells,
-	DrawCells = DrawCells
+	DrawCells = DrawCells,
+	PlantCell = PlantCell,
+	CellUpdate = CellUpdate
 }
