@@ -41,11 +41,9 @@ function PlantCell(cells,self)
 	end
 end
 
-function GrowVeg(self)
-	--table.insert(self,)
-end
 
-function CellUpdate(cells,self)
+
+function CellUpdate(cells,board)
 	
 	for l,a in ipairs(cells) do 
 		
@@ -55,7 +53,9 @@ function CellUpdate(cells,self)
 			if a.timer == 0 then
 				a.Growing = false
 				a.color = a.defaultColor
-				GrowVeg(self)
+				board.tx = a.x
+				board.ty = a.y
+				board.Grown = true
 			end
 		end
 		
