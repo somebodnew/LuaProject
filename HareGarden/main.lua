@@ -3,11 +3,17 @@ love.graphics.setDefaultFilter("nearest","nearest")
 -- Масштаб клетки
 local tile = 50
 
-local Board = {width = tile*15,height = tile*10}
+HorCell = 15
+VerCell = 10
 
+local Board = {width = tile*HorCell,height = tile*VerCell}
+
+-- Размер экрана
 success = love.window.setMode(Board.width,Board.height)
 
+-- Библиотеки
 local anim = require('anim')
+local field = require('field')
 
 -- Загрузка спрайтшита
 Hare = love.graphics.newImage('assets/HareSheet.png')
@@ -55,30 +61,7 @@ end
 
             -- Анимации зайца
 			
-function IdleAnimation(first, last)
-
-	local animation={
-		timer = 0,
-		speed = 0.3,
-		frameIdx = 1,
-		frames = {},
-		x = 55, y = 47,
-		
-		}
-		
-	for i = first, last do
-		local quad = love.graphics.newQuad(i * animation.x, 0, animation.x, animation.y,
-			Hare:getWidth(), Hare:getHeight())
 			
-		table.insert(animation.frames, quad)
-	end	
-	
-	return animation
-	
-end	
-	
-
-
 function EntityDraw(animation)
 	frame = anim.getFrame(animation) 
 	love.graphics.draw(
@@ -88,10 +71,11 @@ function EntityDraw(animation)
 end
 
 
-
 function love.load()
-	playerAnimation.idle = IdleAnimation(0,7)
+	playerAnimation.idle = anim.idle(0,7)
 	playerAnimation.current = playerAnimation.idle
+	
+	cells = field.GenCells(HorCell,VerCell,tile)
 end
 
 
@@ -104,7 +88,8 @@ end
 
 
 function love.draw()
-	
+	field.DrawCells(tile,cells)
+	love.graphics.setColor(1,1,1)
 	EntityDraw(playerAnimation.current)
 	
 end

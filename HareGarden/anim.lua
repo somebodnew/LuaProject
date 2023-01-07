@@ -11,7 +11,30 @@ local function getFrame(self)
 	return self.frames[self.frameIdx]
 end
 
+local function IdleAnimation(first, last)
+
+	local animation={
+		timer = 0,
+		speed = 0.3,
+		frameIdx = 1,
+		frames = {},
+		x = 55, y = 47,
+		
+		}
+		
+	for i = first, last do
+		local quad = love.graphics.newQuad(i * animation.x, 0, animation.x, animation.y,
+			Hare:getWidth(), Hare:getHeight())
+			
+		table.insert(animation.frames, quad)
+	end	
+	
+	return animation
+	
+end	
+
 return {
 	update = update,
-	getFrame = getFrame
+	getFrame = getFrame,
+	idle = IdleAnimation
 }
