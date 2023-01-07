@@ -1,7 +1,7 @@
 love.graphics.setDefaultFilter("nearest","nearest")
 
 -- Масштаб клетки
-local tile = 55
+local tile = 54
 
 HorCell = 15
 VerCell = 10
@@ -72,7 +72,7 @@ end
 
 
 function love.load()
-	love.graphics.setColor(1,1,1)
+	
 	playerAnimation.idle = anim.idle(0,7)
 	playerAnimation.current = playerAnimation.idle
 	
@@ -89,6 +89,8 @@ end
 
 
 function love.draw()
+	love.graphics.setColor(0.3,0.3,0.3)
+	love.graphics.rectangle('fill',0,0,Board.width,Board.height)
 	field.DrawCells(tile,cells,HorCell-1,VerCell-1)
 	love.graphics.setColor(1,1,1)
 	EntityDraw(playerAnimation.current)
