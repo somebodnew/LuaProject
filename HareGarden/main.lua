@@ -3,7 +3,7 @@ love.graphics.setDefaultFilter("nearest","nearest")
 -- Масштаб клетки
 local tile = 54
 
-HorCell = 15 -- -1
+HorCell = 14 -- -1
 VerCell = 10 -- -2
 
 -- Параметры поля и мира
