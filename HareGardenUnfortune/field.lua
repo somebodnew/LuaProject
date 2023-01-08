@@ -1,7 +1,7 @@
 function GenCells(HorCell,VerCell,tileSize)
 	cells = {}
 	for i = 0, HorCell do
-		for j = 1, VerCell do
+		for j = 0, VerCell do
 			local c = math.pow(-1,i)*math.pow(-1,j)
 			cell = {
 			x = i*tileSize+tileSize/2,
@@ -28,11 +28,11 @@ function DrawCells(tileSize,cells)
 	
 end
 
-function PlantCell(cells,player)
+function PlantCell(cells,self)
 
 	for l,a in ipairs(cells) do 
 		
-		if a.x == player.x and a.y == player.y then 
+		if a.x == self.x and a.y == self.y then 
 			a.color = {171/255,82/255,54/255} 
 			a.Growing = true
 			a.timer = 15
@@ -41,13 +41,6 @@ function PlantCell(cells,player)
 	end
 end
 
-function Harvest(Plant,player)
-
-	if Plant.x == player.x and Plant.y == player.y then 
-		Plant.ShouldDestroy = true
-	end
-
-end
 
 
 function CellUpdate(cells,board)
@@ -73,6 +66,5 @@ return {
 	GenCells = GenCells,
 	DrawCells = DrawCells,
 	PlantCell = PlantCell,
-	CellUpdate = CellUpdate,
-	Harvest = Harvest
+	CellUpdate = CellUpdate
 }
