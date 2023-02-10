@@ -15,8 +15,6 @@ local Board = {
 	tx = tile/2,
 	ty = tile/2,
 	Grown = false,
-	score = 10,
-	GameOn = true
 	}
 
 -- Размер экрана
@@ -30,6 +28,7 @@ local field = require('field')
 Hop = love.audio.newSource('assets/Hop.mp3', 'static')
 Hop:setPitch(3)
 GO = love.audio.newSource('assets/GameOver.mp3', 'static')
+GS = love.audio.newSource('assets/GameSong.mp3', 'static')
 s1 = love.audio.newSource('assets/Carrot.mp3', 'static')
 s2 = love.audio.newSource('assets/BadCarrot.mp3', 'static')
 s3 = love.audio.newSource('assets/WorstCarrot.mp3', 'static')
@@ -40,6 +39,8 @@ GoldenCarrot = love.graphics.newImage('assets/GoldenCarrotSheet.png')
 Carrot = love.graphics.newImage('assets/CarrotSheet.png')
 BadCarrot = love.graphics.newImage('assets/BadCarrotSheet.png')
 WorstCarrot = love.graphics.newImage('assets/WorstCarrotSheet.png')
+CTile = love.graphics.newImage('assets/Tile.png')
+PTile = love.graphics.newImage('assets/PlantedTile.png')
 
 
 local player = {
@@ -98,34 +99,53 @@ function Plant(self,board)
 end
 
 function GrowVeg(self,board)
-	pam = math.random(2)*math.pow((-1),math.random(2))
-	if pam == 2 then
-		pc = GoldenCarrot
-		sond = s1
-	end
-	if pam == 1 then
-		pc = Carrot
-		sond = s1
-	end
-	if pam == -2 then
-		pc = WorstCarrot
-		sond = s3
-	end
-	if pam == -1 then
-		pc = BadCarrot
-		sond = s2
-	end
+	
+	t = love.math.random(10,13)
+	
 	Veg = {
 	x = board.tx,
 	y = board.ty,
 	ShouldDestroy = false,
-	grade = pam,
-	pic = pc,
-	sound = sond
+	grade = 5,
+	pic = Carrot,
+	sound = s1,
+	timer = t,
+	Fresh = 2
 	}
 	
 	table.insert(self,Veg)
 end
+
+function VegUpdate(a,VegActive)
+
+	 
+	a.timer = a.timer - 1 
+	
+	if a.timer == 0 then
+		if a.Fresh == 2 then
+			
+			a.Fresh = 1
+			a.timer = 7
+			a.pic = BadCarrot
+			a.grade = 2
+		end	
+		if a.Fresh == 1 then
+			
+			a.Fresh = 0
+			a.timer = 20
+			a.pic = WorstCarrot
+			a.grade = -10
+		end
+		if a.Fresh == 0 then
+		
+			table.remove(VegActive,a.Veg)
+		
+		end
+		
+	end
+
+end
+
 
 -- Костыль: после хода переменная Pressed становится истинной, тогда при следующей итерации ход не осуществится, пока не сработает следующая функция
 -- Если кнопка не нажата, то Pressed становится ложной 
@@ -136,9 +156,18 @@ function EndTurn(board)
 		-- После окончания действия игрока, начинается окончание хода, где происходят действия остальных вещей
 		
 		-- Функция обновляет состояние всех клеток с семенами - они сокращают свой таймер, приближая вырастание морковок
-		field.CellUpdate(cells,board)
+		for l,a in ipairs(cells) do
+			if a.Growing == true then
+				a.pic = PTile
+			field.CellUpdate(a,board)
+			end
+		end
 		
+		for i, a in ipairs(VegActive)do
+			
+			VegUpdate(a,VegActive)
 		
+		end
 		
 		-- Если флаг Grown отмечен, убирает отметку и создает овощ
 		if board.Grown == true then
@@ -147,15 +176,19 @@ function EndTurn(board)
 		end
 		board.tx = tile * math.random(0,HorCell-2)+tile/2
 		board.ty = tile * math.random(1,VerCell-2)+tile/2
-		GrowVeg(VegActive,board)
+		--GrowVeg(VegActive,board)
 		for i,a in ipairs(VegActive)do 
 			Harvest(a,player)
 			if a.ShouldDestroy == true then
-				board.score = board.score + a.grade*5
+				board.Carrot = board.Carrot + a.grade*10
+				
+				
 				a.sound:play()
 				table.remove(VegActive,i)
 			end
 		end
+		board.Carrot = board.Carrot - 1
+		board.score = board.score + 1
 		love.audio.stop(Hop)
 	end
 	
@@ -186,9 +219,9 @@ function BackgroundColor(Board)
 	love.graphics.rectangle('fill',0,0,Board.width,Board.height)
 end
 
-function ShowScore(Board)
+function ShowCarrot(Board)
 	love.graphics.setColor(1,0,1)
-	love.graphics.print('Your Score: '.. Board.score,Board.tile/2,Board.tile/2,0,3,3)
+	love.graphics.print('Your Carrot: '.. Board.Carrot,Board.tile/2,Board.tile/2,0,3,3)
 	love.graphics.setColor(1,1,1)
 	love.graphics.print('Hare',Board.tile*6,Board.tile/2,0,3,3) 
 	love.graphics.setColor(0,1,0)
@@ -196,14 +229,23 @@ function ShowScore(Board)
 end
 
 function GameOver(Board)
-	if Board.score <= 0 then 
-	Board.GameOn = false 
-	GO:play()
+	if Board.Carrot <= 0 then 
+		Board.GameOn = 2 
+		love.audio.stop( )
+		GO:setLooping(true)
+		GO:play()
 	end
 end
 
 function love.load()
+	love.audio.stop( )
+	Board.score = 0
+	Board.GameOn = 0
+	Board.Carrot = 25
 	
+	GS:setLooping(true)
+	GS:play()
+		
 	-- Список овощей
 	
 	
@@ -217,15 +259,21 @@ function love.load()
 	playerAnimation.current = playerAnimation.idle
 	
 	-- Генерация поля
-	cells = field.GenCells(HorCell-2,VerCell-2,tile)
+	cells = field.GenCells(HorCell-2,VerCell-2,tile,CTile)
 end
 
-s = true
-
 function love.update(dt)
-	if Board.GameOn == true then
+	if Board.GameOn == 0 then
+		if love.keyboard.isDown('space') then
+			Board.GameOn = 1
+		end
+	end
+	if Board.GameOn == 1 then
 		-- Действие Игрока
 		Move(player,Board) -- Передвижение игрока
+		
+		
+		
 		Plant(player,Board)-- Посадка семян
 		
 		-- Остальные события происходят при срабатывании этой функции, а она зависит от хода игрока
@@ -240,16 +288,37 @@ function love.update(dt)
 		-- Конец игры если очков мало
 		GameOver(Board)
 		
+		if Board.Carrot >= 1000 then
+			
+			Board.GameOn = 3
+		
+		end
+		
+	end	
+	if Board.GameOn == 2 then
+		if love.keyboard.isDown('space') then
+			love.load()
+		end
 	end
 end
 
 
 function love.draw()
 	-- Фон серый, видно только по краям
+	
+	
 	BackgroundColor(Board)
-	if Board.GameOn == true then
+	if Board.GameOn == 0 then
+		love.graphics.setColor(1,1,1)
+		love.graphics.print('Reach ',Board.width/2-140,Board.height/2-50,0,3,3)
+		love.graphics.setColor(251/255,242/255,52/255)
+		love.graphics.print('1000',Board.width/2,Board.height/2-50,0,3,3)
+		love.graphics.setColor(1,1,1)
+		love.graphics.print('in least amount of moves!',Board.width/4,Board.height/2,0,2,2)
+	end
+	if Board.GameOn == 1 then
 		-- Вывод Счета
-		ShowScore(Board)
+		ShowCarrot(Board)
 		-- Отрисовка клеток
 		field.DrawCells(tile,cells,HorCell-1,VerCell-1)
 		
@@ -261,9 +330,19 @@ function love.draw()
 		for i, a in ipairs(VegActive)do
 			EntityDraw(carrotAnimation,a.pic,a.x,a.y)
 		end
-	else
+	end
+	if Board.GameOn == 2 then
+		
+		
+		
+		love.graphics.setColor(1,1,1)
+		love.graphics.print('Game Over!',Board.width/2-100,Board.height/2-25,0,3,3)
+		love.graphics.print('You Collected: ',Board.width/2-150,Board.height/2+20,0,3,3)
+		love.graphics.print(Board.Carrot,Board.width/2+120,Board.height/2+20,0,3,3)
+	end
+	if Board.GameOn == 3 then
 		if s == true then
-			GO:play()
+			--Win:play()
 			s = false
 		end
 		
@@ -271,6 +350,8 @@ function love.draw()
 			s = true
 		end
 		love.graphics.setColor(1,1,1)
-		love.graphics.print('Game Over!',Board.width/2-25,Board.height/2,0,3,3)
+		love.graphics.print('You Won!',Board.width/2-100,Board.height/2-25,0,3,3)
+		love.graphics.print('You Scored: ',Board.width/2-120,Board.height/2+20,0,3,3)
+		love.graphics.print(Board.score,Board.width/2+100,Board.height/2+20,0,3,3)
 	end
 end

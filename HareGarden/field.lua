@@ -1,15 +1,15 @@
-function GenCells(HorCell,VerCell,tileSize)
+function GenCells(HorCell,VerCell,tileSize,pc)
 	cells = {}
 	for i = 0, HorCell do
 		for j = 1, VerCell do
-			local c = math.pow(-1,i)*math.pow(-1,j)
+			
 			cell = {
 			x = i*tileSize+tileSize/2,
 			y = j*tileSize+tileSize/2, 
-			defaultColor = {c,c,c},
-			color = {c,c,c},
 			timer = 0,
-			Growing = false}
+			Growing = false,
+			pic = pc,
+			defpic = pc}
 			
 			table.insert(cells, cell)
 			
@@ -21,8 +21,8 @@ end
 function DrawCells(tileSize,cells)
 
 	for l,a in ipairs(cells) do 
-		love.graphics.setColor(a.color,a.color,a.color)
-		love.graphics.rectangle("fill",a.x,a.y,tileSize,tileSize)
+		love.graphics.setColor(1,1,1)
+		love.graphics.draw(a.pic,a.x,a.y)
 
 	end
 	
@@ -33,9 +33,9 @@ function PlantCell(cells,player)
 	for l,a in ipairs(cells) do 
 		
 		if a.x == player.x and a.y == player.y then 
-			a.color = {171/255,82/255,54/255} 
+			
 			a.Growing = true
-			a.timer = 15
+			a.timer = 5
 		end
 
 	end
@@ -50,9 +50,9 @@ function Harvest(Plant,player)
 end
 
 
-function CellUpdate(cells,board)
+function CellUpdate(a,board)
 	
-	for l,a in ipairs(cells) do 
+	 
 		
 		if a.Growing == true  then 
 			a.timer = a.timer - 1 
@@ -60,13 +60,14 @@ function CellUpdate(cells,board)
 			if a.timer == 0 then
 				a.Growing = false
 				a.color = a.defaultColor
+				a.pic = a.defpic
 				board.tx = a.x
 				board.ty = a.y
 				board.Grown = true
 			end
 		end
 		
-	end
+	
 
 end
 return {
