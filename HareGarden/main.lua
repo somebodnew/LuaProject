@@ -232,7 +232,6 @@ function GameOver(Board)
 	if Board.Carrot <= 0 then 
 		Board.GameOn = 2 
 		love.audio.stop( )
-		GO:setLooping(true)
 		GO:play()
 	end
 end
